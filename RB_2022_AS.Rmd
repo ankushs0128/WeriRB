@@ -1,0 +1,744 @@
+---
+title: "LS1"
+AUTHOR: Ankush Sharma
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+
+
+
+```{r setup, message=FALSE, warning=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r import package}
+#####
+#install.packages("BiocManager")
+
+#BiocManager::install("SingleCellExperiment")
+#BiocManager::install("AnnotationHub")
+#BiocManager::install("ensembldb")
+#install.packages("Seurat")
+#install.packages("ggplot2")
+#install.packages("tidyverse")
+#install.packages("ensembldb")
+
+####
+library(Matrix.utils)
+library(Seurat)
+library(tidyverse)
+library(Matrix)
+library(RCurl)
+library(scales)
+library(cowplot)
+library(SingleCellExperiment)
+library(AnnotationHub)
+library(ensembldb)
+library(ggplot2)
+library(patchwork)
+library(clustree)
+library(ggpubr)
+library(reticulate)
+library(knitr)
+library(dplyr)
+library(kableExtra)
+library(sctransform)
+```
+
+```{r importing files }
+set.seed(1234)
+Sys.setenv('R_MAX_VSIZE'=1200000)
+#dirname<-"~/Desktop/ASC_Sample/FINAL/seuratv3_sctransform/outs/filtered_feature_bc_matrix/"
+
+library(Seurat)
+
+
+# Settings for the current run
+currentjob <- "RB"
+# Path and name
+dirname1<- "../GSE196420_RAW/GSM5883725_RB025/"
+
+# scRNAseq - Initialize the Seurat object with the raw (non-normalized data).
+rnaobjects.data <- Read10X(data.dir = dirname1)
+RB025 <- CreateSeuratObject(counts = rnaobjects.data, 
+                           min.cells = 3, 
+                           min.features = 200, 
+                           project = "RB025",
+                           assay = "RNA",
+                           names.delim = "-")
+###
+dirname2 <- "../GSE196420_RAW/GSM5883726_RB026/"
+rnaobjects.data <- Read10X(data.dir = dirname2)
+RB026 <- CreateSeuratObject(counts = rnaobjects.data, 
+                           min.cells = 3, 
+                           min.features = 200, 
+                           project = "RB026",
+                           assay = "RNA",
+                           names.delim = "-")
+
+####
+dirname3<- "../GSE196420_RAW/GSM5883727_RB027/"
+rnaobjects.data <- Read10X(data.dir = dirname3)
+RB027 <- CreateSeuratObject(counts = rnaobjects.data, 
+                           min.cells = 3, 
+                           min.features = 200, 
+                           project = "RB027",
+                           assay = "RNA",
+                           names.delim = "-")
+#####
+dirname4<- "../GSE196420_RAW/GSM5883728_RB028/"
+
+rnaobjects.data <- Read10X(data.dir = dirname4)
+RB028 <- CreateSeuratObject(counts = rnaobjects.data, 
+                           min.cells = 3, 
+                           min.features = 200, 
+                           project = "RB028",
+                           assay = "RNA",
+                           names.delim = "-")
+dirname4<- "../GSE196420_RAW/GSM5883729_RB029/"
+rnaobjects.data <- Read10X(data.dir = dirname4)
+RB029 <- CreateSeuratObject(counts = rnaobjects.data, 
+                           min.cells = 3, 
+                           min.features = 200, 
+                           project = "RB029",
+                           assay = "RNA",
+                           names.delim = "-")
+
+
+
+dirname4<- "../GSE142526_RAW/D105fetal_filtered_gene_bc_matrices/."
+rnaobjects.data <- Read10X(data.dir = dirname4)
+D105 <- CreateSeuratObject(counts = rnaobjects.data, 
+                           min.cells = 3, 
+                           min.features = 200, 
+                           project = "D105",
+                           assay = "RNA",
+                           names.delim = "-")
+
+dirname4<- "../GSE142526_RAW/D125Cfetal_filtered_gene_bc_matrices/GRCh38/"
+rnaobjects.data <- Read10X(data.dir = dirname4)
+D125C <- CreateSeuratObject(counts = rnaobjects.data, 
+                           min.cells = 3, 
+                           min.features = 200, 
+                           project = "D125C",
+                           assay = "RNA",
+                           names.delim = "-")
+
+
+dirname4<- "../GSE142526_RAW/D125Pfetal_filtered_gene_bc_matrices/GRCh38/"
+rnaobjects.data <- Read10X(data.dir = dirname4)
+D125P <- CreateSeuratObject(counts = rnaobjects.data, 
+                           min.cells = 3, 
+                           min.features = 200, 
+                           project = "D125P",
+                           assay = "RNA",
+                           names.delim = "-")
+
+
+dirname4<- "../GSE142526_RAW/D59_fetal_filtered_gene_bc_matrices/GRCh38/"
+rnaobjects.data <- Read10X(data.dir = dirname4)
+D59 <- CreateSeuratObject(counts = rnaobjects.data, 
+                           min.cells = 3, 
+                           min.features = 200, 
+                           project = "D59",
+                           assay = "RNA",
+                           names.delim = "-")
+
+
+dirname4<- "../GSE142526_RAW/D80P_fetal_filtered_gene_bc_matrices/GRCh38/"
+rnaobjects.data <- Read10X(data.dir = dirname4)
+D80P <- CreateSeuratObject(counts = rnaobjects.data, 
+                           min.cells = 3, 
+                           min.features = 200, 
+                           project = "D80P",
+                           assay = "RNA",
+                           names.delim = "-")
+
+RB.combined <- merge(RB025, y = c( RB026, RB027,RB028,RB029,D105,D125C,D125P,D59,D80P), add.cell.ids = c('RB025', 'RB026', 'RB027','RB028','RB029','D105','D125C','D125P','D59','D80P'), project = "Retinoblastoma")
+RB.combined
+
+head(colnames(RB.combined))
+
+table(RB.combined$orig.ident)
+```
+
+
+```{r create seurat object}
+# Initialize the Seurat object with the raw (non-normalized data).
+Sys.setenv('R_MAX_VSIZE'=1200000)
+
+RB_rna <- RB.combined
+rm(RB.combined)
+RB_rna
+
+```
+
+```{r quality metrics  }
+#Filtering low-quality cells
+
+Sys.setenv('R_MAX_VSIZE'=1200000)
+counts_per_cell <- Matrix::colSums(RB_rna)
+counts_per_gene <- Matrix::rowSums(RB_rna)
+genes_per_cell <- Matrix::colSums(RB_rna) # count gene only if it has non-zero reads mapped.
+
+###cells_per_gene <- Matrix::?(counts>?) # only count cells where the gene is expressed
+cells_per_gene <- Matrix::rowSums(RB_rna) # only count cells where the gene is expressed
+
+currentjob <- "RB"
+hist(log10(counts_per_cell+1),main='counts per cell',col='#CAB8CB',border ="white")
+#saving plots
+  dev.copy(pdf,paste0("../Seurat/", currentjob,"QCmetrics_counts_per_cell.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+hist(log10(genes_per_cell+1), main='genes per cell', col='#CAB8CB',border ="white")
+#saving plots
+dev.copy(pdf,paste0("../Seurat/", currentjob,"QCmetrics_genes_per_cell.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+plot(counts_per_cell, genes_per_cell, log='xy', col='#CAB8CB')
+#saving plots
+dev.copy(pdf,paste0("../Seurat/", currentjob,"QCmetrics_CountsGenes_per_cell.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+###histogram of counts per gene in log10 scale
+hist(log10(counts_per_gene+1), main='counts per gene', col='#CAB8CB',border ="white")
+#saving plots 
+dev.copy(pdf,paste0("../Seurat/", currentjob,"QCmetrics_counts_per_gene.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+# Plots
+
+# Counts per cell
+p1 <- qplot(log10(counts_per_cell+1), geom = "histogram", main="Counts per cell",
+        xlab="log10 Counts per cell",
+        fill=I('#CAB8CB'),
+        col=I("black"))
+
+p1 <- qplot(log10(counts_per_cell+1), geom = "histogram", main="Counts per cell",
+        xlab="log10 Counts per cell",
+        fill=I('#CAB8CB'),
+        col=I("black"))
+dev.off()
+
+# Genes per cell
+
+p2 <- qplot(log10(genes_per_cell+1), geom = "histogram", main="Genes per cell",
+        xlab="log10 Genes per cell",
+        fill=I('#CAB8CB'),
+        col=I("black"))
+
+p2 <- qplot(log10(genes_per_cell+1), geom = "histogram", main="Genes per cell",
+        xlab="log10 Genes per cell",
+        fill=I('#CAB8CB'),
+        col=I("black"))
+
+
+# Counts per cell vs Genes per cell
+p3 <- qplot(counts_per_cell, genes_per_cell, log = "xy", colour=I('#aa93ab'), main="Counts vs Genes per cell", ylab = "Genes", xlab="Counts")
+
+
+# Histogram of Counts per gene in log10 scale
+p4 <- qplot(log10(counts_per_gene+1), geom = "histogram", main="Counts per gene",
+             xlab="log10 Counts per gene",
+        fill=I('#CAB8CB'),
+        col=I("black"))
+
+
+(p1 & p2) / (p3 & p4)
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QCmetrics_panel_1.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+#Plot cells ranked by their number of detected genes.
+#plot(sort(genes_per_cell), xlab='cell', log='y', main='genes per cell (ordered)',col='#CAB8CB')
+#saving plots
+#pdf(file = paste0("QCmetrics_genes_per_cell_ordered-",currentjob,".pdf"), width=6, height=4, paper='special')
+#plot(sort(genes_per_cell), xlab='cell', log='y', main='genes per cell (ordered)',col='#CAB8CB')
+#dev.off()
+```
+
+
+```{r QC metrics -violin plots}
+# The [[ operator can add columns to object metadata. This is a great place to stash QC stats
+
+Sys.setenv('R_MAX_VSIZE'=1200000)
+
+RB_rna[["percent.mt"]] <- PercentageFeatureSet(RB_rna, pattern = "^MT-")
+# Show QC metrics for the first 5 cells
+head(RB_rna@meta.data, 5)
+
+# Visualize QC metrics as a violin plot
+
+p1 <- VlnPlot(object = RB_rna, features = c("nCount_RNA","nFeature_RNA","percent.mt"), ncol = 3, pt.size = 0.2)
+p1
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QCmetrics_p1_violin.pdf"), width=14, height=10, paper='special')
+dev.off()
+```
+
+```{r feature scatter plots FIlTERING CELLS}
+# FeatureScatter is typically used to visualize feature-feature relationships, but can be used
+# for anything calculated by the object, i.e. columns in object metadata, PC scores etc.
+
+#We filter out cells that have unique gene counts (nFeature_RNA) over 3000 or less than
+# 200 Note that > and < are used to define a'gate'.  
+#-Inf and Inf should be used if you don't want a lower or upper threshold.
+
+Sys.setenv('R_MAX_VSIZE'=1200000)
+
+RB_rna1_filtered <- subset(RB_rna, subset = nFeature_RNA > 200  & nCount_RNA > 300 & nCount_RNA <100000 & percent.mt <10)
+
+plot1 <- FeatureScatter(RB_rna1_filtered, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(RB_rna1_filtered, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 + plot2
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QCmetrics_p1p2_filtered_scatter_b.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+
+plot5 <- FeatureScatter(RB_rna1_filtered, feature1 = "nCount_RNA", feature2 = "percent.mt") + ggtitle("Counts vs Mitochondrial percentage") +  theme(plot.title = element_text(size = 12, face = "bold")) + NoLegend() + theme(text = element_text(size = 10))
+plot6 <- FeatureScatter(RB_rna1_filtered, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") + ggtitle("Counts vs Features") +  theme(plot.title = element_text(size = 12, face = "bold")) + NoLegend() + theme(text = element_text(size = 10))
+plot5 + plot6
+dev.copy(pdf,paste0("../Seurat/", currentjob,"QCmetrics-p5p6-filteredcells_HARDTHRESHOLD_SEURAT.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+write.table(counts_per_gene,"MERGEobjects_countpergene_afterfiltering_HARDTHRESHOLD_SEURAT.csv", quote = FALSE, sep = "," )
+
+pk.count <- VlnPlot(object = RB_rna1_filtered, features = "nCount_RNA", pt.size = 0.2)
+pk.count <- pk.count + geom_hline(yintercept = 300, linetype="dashed", color = "red", size=1.5) + scale_y_continuous() + NoLegend()
+
+
+pk.feat <- VlnPlot(object = RB_rna1_filtered, features = "nFeature_RNA", pt.size = 0.2)
+pk.feat <- pk.feat + geom_hline(yintercept = 200, linetype="dashed", color = "red", size=1.5) + scale_y_continuous() + NoLegend()
+
+
+pk.mito <- VlnPlot(object = RB_rna1_filtered, features = "percent.mt", pt.size = 0.2)
+pk.mito <- pk.mito + geom_hline(yintercept = 5, linetype="dashed", color = "red", size=1.5) + NoLegend()
+
+
+pk.all <- ggarrange(pk.count,pk.feat,pk.mito, nrow=1) 
+pk.all
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QCmetrics_pk.ccount_feat_mito.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+RB_rna <- RB_rna1_filtered
+
+```
+
+
+```{r CC Scoring_1, message=FALSE, warning=FALSE}
+# Import cell cycle (cc) genes stored in Seurat then do cc scoring on dataset
+# As an alternative to completely removing cell-cycle signal this workflow regress out the difference between the G2M and S-phase scores. Seurat recommends this for differentiating cells and it was best in tests.
+
+rm(RB_rna1_filtered)
+
+Sys.setenv('R_MAX_VSIZE'=1200000)
+
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+RB_rna <- CellCycleScoring(RB_rna, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE)
+RB_rna$CC.Difference <- RB_rna$S.Score - RB_rna$G2M.Score
+
+# Visualize the distribution of cell cycle markers across
+RidgePlot(RB_rna, features = c("PCNA", "TOP2A", "MCM6", "MKI67"), ncol = 2)
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QC2.CC-markers-distribution.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+saveRDS(RB_rna, file = "RB_rna_LS1_BeforeNormalization_readyforsaga.rds")
+#RB_rna <- readRDS("RB_rna_LS1_BeforeNormalization_readyforsaga.rds")
+#RB_rna <- readRDS("~/Dropbox/single_cell_seq/sc_RBoma/scRNA_Ankushs/Merged_scRNA_Analysis/LS1_2022_MS/output/rdsfiles/RB_rna_LS1_AfterNormalization_saga.rds")
+```
+
+
+```{r SCTransform_and PCA_analysis}
+#Perform on SAGA_too labor demanding for 16GB MacbookPro
+(future.globals.maxSize = 500 * 1024^2)
+
+RB_rna <- SCTransform(RB_rna, vars.to.regress = "CC.Difference")
+
+# Identify the 10 most highly variable genes 
+RB_rna <- FindVariableFeatures(RB_rna, selection.method = "vst", nfeatures =10000)
+
+RB_rna <- RunPCA(RB_rna, features = VariableFeatures(object = RB_rna))
+
+#OPEN RDS FILE FROM SAGA and
+#RB_rna <- readRDS("../output/rdsfiles/RB_rna_ASC_LS1_after_normalization_saga.rds")
+```
+
+
+```{r Examine and visualize PCA results}
+VizDimLoadings(RB_rna, dims = 1:2, reduction = "pca")
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QC-pca_reduction.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+DimPlot(RB_rna, reduction = "pca")
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QC-pca_metrics-allvariablegenes.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+DimHeatmap(RB_rna, dims = 1:10, cells = 500, balanced = TRUE)
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QC-heatmap_variablegenes_pca-components.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+
+# Identify the 10 most highly variable genes and Feature Plots
+top10 <- head(VariableFeatures(RB_rna), 10)
+
+# plot variable features with and without labels
+plot5 <- VariableFeaturePlot(RB_rna)
+plot6 <- LabelPoints(plot = plot5, points = top10, repel = TRUE)
+plot5 + plot6
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QC-variable_featurePlot5_6.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+plot7 <- VariableFeaturePlot(RB_rna)
+plot8 <- LabelPoints(plot = plot7, points = top10, repel = TRUE)
+plot7 + plot8
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QC-variable_featurePlot7_8.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+DimHeatmap(RB_rna, dims = 1, cells = 500, balanced = TRUE)
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QC-heatmap_variablegenes.pdf"), width=14, height=10, paper='special')
+dev.off()
+
+```
+
+
+```{r Clustree, message=FALSE, warning=FALSE}
+# This code can be used to evaluate what resolution can be used when running clustering algorithm (louvain)
+# It is only an approximation of how many clusters are reasonable. 
+
+# Run the FindClusters with a vector of different values then run clustree and see where datset has stabile branching then use that resolution for further analysis. 
+RB_rna <- FindNeighbors(RB_rna, dims = 1:30, verbose = FALSE)
+RB_rna <- FindClusters(RB_rna, resolution = c(
+  0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0),
+  verbose = FALSE)
+RB_rna <- RunUMAP(RB_rna, dims = 1:30, verbose = FALSE)
+
+# Clustree plots
+clustree(RB_rna, prefix="SCT_snn_res.", use_core_edges=TRUE, label=T)
+dev.copy(pdf,paste0("~/Dropbox (UiO)/Retinoblastoma/Seurat/", currentjob,"_Clustree.pdf"), width=5, height=8, paper='special')
+dev.off()
+clustree_overlay(RB_rna, x_value = "umap1", y_value = "umap2", red_dim = "umap", prefix="SCT_snn_res.")
+dev.copy(pdf,paste0("~/Dropbox (UiO)/Retinoblastoma/Seurat/", currentjob,"_ClustreeOverlay.pdf"), width=5, height=8, paper='special')
+dev.off()
+
+# Once decided on a resolution, rerun FindClusters with the picked value (in this case 0.4)
+RB_rna<- FindClusters(RB_rna, resolution = 0.4, verbose = FALSE)
+
+# Standard Seurat3, remember the resolution from Clustree above! Create UMAP of unlabbeled clusters
+RB_rna<- RunUMAP(RB_rna, dims = 1:30, verbose = FALSE)
+RB_rna <- FindNeighbors(RB_rna, dims = 1:30, verbose = FALSE)
+
+DimPlot(RB_rna, label = TRUE, label.size = 5, cols = c('0' = '#ffa500', '1' = '#6897bb', '2' = '#5ac18e', '3' = '#8a494d','4' = '#ffc966','5' = '#c0d6e4', '6' = '#f30000', '7' = '#ff6666', '8' = '#cccccc', '9' = '#008080', '10' = '#ffd700', '11' = '#ffd700'))
+dev.copy(pdf,paste0("~/Dropbox (UiO)/Retinoblastoma/Seurat/", currentjob,"_UMAP_unlab_clusters.pdf"), width=5, height=8, paper='special')
+dev.off()
+```
+
+
+```{r elbow plots}
+ElbowPlot(RB_rna)
+dev.copy(pdf,paste0("../Seurat/", currentjob,"_QC-helbowplot_after_PCA_analysis.pdf"), width=14, height=10, paper='special')
+dev.off()
+```
+
+
+```{r UMAP for timepoints}
+
+# If you haven't installed UMAP, you can do so via reticulate::py_install(packages ='umap-learn')
+# Standard Seurat3, remember the resolution from Clustree above!
+
+
+DimPlot(RB_rna, label = 0,  repel = TRUE, label.size = 5, reduction = 'umap', group.by = 'orig.ident', pt.size = 0.5, cols = c('LS1undiff' = '#064273', 'LS1adipo0H' = '#2e7c1d', 'LS1adipo24H' = '#ffd700',  'LS1adipo72H' = '#ff7f50'))
+
+#'LS1undiff' = '#7fffd4', 'LS1adipo0H' = '#2e7c1d', 'LS1adipo24H' = '#ffd700',  'LS1adipo72H' = '#ff7f50',"ASCunDiff" = "black", "ASCadipo0H" = "#ff69b4","ASCadipo24H" = "#57a7b7" ,"ASCadipo72H" = "#b6758e")
+
+dev.copy(pdf,paste0("~/Dropbox (UiO)/Retinoblastoma/Seurat/", currentjob,"_UMAP_origin_NO_labbel.pdf"), width=10, height=7, paper='special')
+dev.off()
+```
+
+```{r CC Scoring, message=FALSE, warning=FALSE}
+# Import cell cycle (cc) genes stored in Seurat then do cc scoring on dataset
+# As an alternative to completely removing cell-cycle signal this workflow regress out the difference between the G2M and S-phase scores. Seurat recommends this for differentiating cells and it was best in tests.
+
+Sys.setenv('R_MAX_VSIZE'=1200000)
+#RB_rna@meta.data$Phase
+
+DimPlot(RB_rna, label = 0, repel = TRUE, label.size = 0, reduction = 'umap', group.by = 'Phase', pt.size = 0.5, cols = c('S' = '#ffa500', 'G2M' = '#f73479', 'G1' = '#5bb7b7'))
+dev.copy(pdf,paste0("~/Dropbox (UiO)/Retinoblastoma/Seurat/", currentjob,"_UMAP_CellCycle2_NO_colCORR_labbel.pdf"), width=10, height=7, paper='special')
+dev.off()
+```
+
+```{r PCA statistically significant}
+saveRDS(RB_rna, file = "RB_rna_ASC_LS1_BeforeClusterTop500.rds")
+#RB_rna <- readRDS("RB_rna_ASC_LS1_BeforeClusterTop500.rds")
+```
+
+```{r Save cluster markers  }
+# find markers for every cluster compared to all remaining cells, report only the positive ones
+
+RB_rna.markers <- FindAllMarkers(RB_rna, only.pos = F, min.pct = 0.1, logfc.threshold = 0.2)
+top500 <- RB_rna.markers %>% group_by(cluster) %>% top_n(n = 500, wt = avg_log2FC)
+top500
+
+# Write markers to file
+write.table(top500, paste0(currentjob,"_C.Top500-cluster-markersB.csv"))
+
+#FROM NEW SEURAT_SOME MINOR DIFFs_IMPORTAN?
+#pbmc.markers <- FindAllMarkers(pbmc, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+#pbmc.markers %>%
+  #  group_by(cluster) %>%
+  #  slice_max(n = 2, order_by = avg_log2FC)
+
+saveRDS(RB_rna, file = "RB_rna_ASC_LS1_AFTERClusterTop500.rds")
+#RB_rna <- readRDS("RB_rna_ASC_LS1_AFTERClusterTop500.rds")
+```
+
+
+```{r Assign new UMAP IDs}
+# Assign new IDs based on scCatch annotation results - Using Seurat Markers
+
+new.cluster.ids_2 <- c("FABP4", "CD24", "PCNA", "CCNB1","CEBPD", "CD24CD70", "PLK1", "TOP2A", "LRRC75A", 'RRM2', "IFIT2", "ELN")
+names(new.cluster.ids_2) <- levels(RB_rna)
+RB_rna <- RenameIdents(RB_rna, new.cluster.ids_2)
+
+# Change back to "SCT" assay for dims
+DefaultAssay(RB_rna) <- "SCT"
+
+# Make UMAP with labels 
+plot9 <- DimPlot(RB_rna, reduction = "umap", label = 0, pt.size = 0.5,repel = TRUE, cols = c("FABP4"= '#ffa500', "CD24" = '#6ca9d0', "PCNA" = '#ffe1f5', 'CCNB1'  = '#e7e719', "CEBPD" = '#ffff00', "CD24CD70" = "#26be41",  "PLK1" = '#d21680', "TOP2A" = '#e50000', "LRRC75A" = '#1478a7', "RRM2" = "#bad1ce", "IFIT2" = "#a897f9", "ELN" = "black")) 
+plot9
+dev.copy(pdf,paste0("~/Dropbox (UiO)/Retinoblastoma/Seurat/", currentjob,"_UMAP_UMAP-NAMES_finALb_NO_labbel.pdf"), width=10, height=7, paper='special')
+dev.off()
+
+
+
+DimPlot(RB_rna, reduction = "umap", label = 0, repel = TRUE, pt.size = 0.5, cols = c("FABP4" = '#ffa500', "CD24" = '#6ca9d0', "PCNA" = '#ffe1f5', 'CCNB1'  = '#e7e719', "CEBPD" = '#ffff00', "CD24CD70" = "#26be41",  "PLK1" = '#d21680', "TOP2A" = '#e50000', "LRRC75A" = '#1478a7', "RRM2" = "#bad1ce", "IFIT2" = "#a897f9", "ELN" = "black")) 
+#'MDM2/CDKN1A' = '#ff6666'
+pdf(file = paste0(currentjob,"_7.UMAP-scCatch.NAMES_finalc_NO_labbel.pdf"), width=8, height=5, paper='special')
+dev.off()
+
+plot9 <- DimPlot(RB_rna, reduction = "umap", label = 0,repel = TRUE, pt.size = 0.5, cols = c("FABP4"= '#ffa500', "CD24" = '#6ca9d0', "PCNA" = '#ffe1f5', 'CCNB1'  = '#e7e719', "CEBPD" = '#ffff00', "CD24CD70" = "#26be41",  "PLK1" = '#d21680', "TOP2A" = '#e50000', "LRRC75A" = '#1478a7', "RRM2" = "#bad1ce", "IFIT2" = "#a897f9", "ELN" = "black")) 
+
+pdf(file = paste0(currentjob,"_7.UMAP-scCatch.NAMESfinALc_NO_Labbel.pdf"), width=8, height=5, paper='special')
+
+
+
+###adding metadata to rename clusters 
+
+fil.cluster.ids <-  c("FABP4", "CD24", "PCNA", "CCNB1","CEBPD", "CD24CD70", "PLK1", "TOP2A", "LRRC75A", 'RRM2', "IFIT2", "ELN")
+Idents(RB_rna) <- "seurat_clusters"
+names(fil.cluster.ids) <- levels(RB_rna)
+RB_rna <- RenameIdents(RB_rna, fil.cluster.ids)
+# 
+# 
+DimPlot(RB_rna, reduction = "umap", label = 0,repel = TRUE, pt.size = 0.5, cols = c("FABP4"= '#ffa500', "CD24" = '#6ca9d0', "PCNA" = '#ffe1f5', 'CCNB1'  = '#e7e719', "CEBPD" = '#ffff00', "CD24CD70" = "#26be41",  "PLK1" = '#d21680', "TOP2A" = '#e50000', "LRRC75A" = '#1478a7', "RRM2" = "#bad1ce", "IFIT2" = "#a897f9", "ELN" = "black")) 
+
+RB_rna <- AddMetaData(RB_rna, metadata =RB_rna@active.ident, col.name = 'seurat_clusters')
+
+
+
+```
+
+
+```{r Cluster markers}
+#find all markers of cluster 1_WHAT DO WE USE THIS FOR?
+#cluster1.markers <- FindMarkers(RB_rna, ident.1 = "FABP4", min.pct = 0.25)
+#head(cluster1.markers, n = 100)
+
+```
+
+
+```{r  distinguishing cluster markers}
+# find all markers distinguishing cluster 5 from clusters 0 and 3_AND THIS?
+cluster4.markers <- FindMarkers(RB_rna, ident.1 = "FABP4", ident.2 = c ("CD24", "PCNA", "CCNB1","CEBPD", "CD24CD70", "PLK1", "TOP2A", "LRRC75A", 'RRM2', "IFIT2", "ELN"), min.pct = 0.25)
+head(cluster4.markers, n = 50)
+```
+
+```{r violin plots for markers1 }
+#FindAllMarkers automates this process for all clusters,
+#cluster1.markers <- FindMarkers(RB_rna, ident.1 = "SERPINB2", logfc.threshold = 0.2, test.use = "roc", only.pos = TRUE)
+
+VlnPlot(RB_rna, features = c("DPP4"), cols = c("FABP4"= '#ffa500', "CD24" = '#6ca9d0', "PCNA" = '#ffe1f5', 'CCNB1'  = '#e7e719', "CEBPD" = '#ffff00', "CD24CD70" = "#26be41",  "PLK1" = '#d21680', "TOP2A" = '#e50000', "LRRC75A" = '#1478a7', "RRM2" = "#bad1ce", "IFIT2" = "#a897f9", "ELN" = "black"), pt.size=0)
+
+dev.copy(pdf,paste0("~/Dropbox (UiO)/Retinoblastoma/Seurat/", currentjob,"_ViolinPlot_DPP4.pdf"), width=8, height=5, paper='special')
+dev.off()
+
+```
+
+
+```{r Single cell heatmap of feature expression1}
+# Heatmap for the genes of interest
+# Single cell heatmap of feature expression
+
+# setting slim.col.label to TRUE will print just the cluster IDS instead of
+# every cell name
+
+top15 <- RB_rna.markers %>% group_by(cluster) %>% top_n(n = 15, wt = avg_log2FC)
+DoHeatmap(RB_rna, features = top15$gene) + NoLegend() + scale_fill_gradientn(colors = c("#f4f4f4","#f4f4f4","#000000")) + theme(text = element_text(size = 10))
+pdf(file = paste0(currentjob,"_6.heatmap.Top15-cluster-markers.pdf"), width=15, height=22, paper='special') + scale_fill_gradientn(colors = c("#f4f4f4","#f4f4f4","#000000")) + theme(text = element_text(size = 10))
+DoHeatmap(RB_rna, features = top15$gene) + NoLegend()+ scale_fill_gradientn(colors = c("#f4f4f4","#f4f4f4","#000000")) + theme(text = element_text(size = 10))
+dev.off()
+```
+
+
+```{r Single cell heatmap of feature expression3 SINSARC}
+# Heatmap for the genes of interest
+# Single cell heatmap of feature expression
+DoHeatmapFeature.markers <-FindMarkers(RB_rna, ident.1 = "FABP4", logfc.threshold = 0.2, test.use = "roc", only.pos = TRUE)
+#SINSARC
+DoHeatmap(subset(RB_rna, downsample = 100), features  = c("ANLN", "ASPM", "AURKA", "AURKB", "BIRC5", "BUB1", "BUB1B", "CCNA2", "CCNB1", "CCNB2", "CDK1", "CDC20", "CDC45", "CDC6", "CDC7", "CDCA2", "CDCA3", "CDCA8", "CENPA", "CENPE", "CENPL", "CEP55", "CHEK1", "CKS2", "ECT2", "ESPL1", "FBXO5", "FOXM1", "H2AFX", "HP1BP3", "KIF11", "KIF14", "KIF15", "KIF18A", "KIF20A", "KIF23", "KIF2C", "KIF4A", "KIF1C", "MAD2L1", "MCM2", "MCM7", "MELK", "NCAPH", "NDE1", "NEK2", "NUF2", "OIP5", "PAK3", "PBK", "PLK4", "PRC1", "PTTG1", "RAD51AP1", "RNASEH2A", "RRM2", "SGO2", "SMC2", "SPAG5", "SPC25", "TOP2A", "TPX2", "TRIP13", "TTK", "ZWINT"), size = 3) + scale_fill_gradientn(colors = c("#ffffff","#ffffff","#005b96")) + theme(text = element_text(size = 4)) + NoLegend()
+
+pdf(file = paste0("Heatmap_SINSARCallTimepoints_NEW2-",currentjob,".pdf"), width=2, height=4, paper='special')
+DoHeatmap(subset(RB_rna, downsample = 100), features  = c("ANLN", "ASPM", "AURKA", "AURKB", "BIRC5", "BUB1", "BUB1B", "CCNA2", "CCNB1", "CCNB2", "CDK1", "CDC20", "CDC45", "CDC6", "CDC7", "CDCA2", "CDCA3", "CDCA8", "CENPA", "CENPE", "CENPL", "CEP55", "CHEK1", "CKS2", "ECT2", "ESPL1", "FBXO5", "FOXM1", "H2AFX", "HP1BP3", "KIF11", "KIF14", "KIF15", "KIF18A", "KIF20A", "KIF23", "KIF2C", "KIF4A", "KIF1C", "MAD2L1", "MCM2", "MCM7", "MELK", "NCAPH", "NDE1", "NEK2", "NUF2", "OIP5", "PAK3", "PBK", "PLK4", "PRC1", "PTTG1", "RAD51AP1", "RNASEH2A", "RRM2", "SGO2", "SMC2", "SPAG5", "SPC25", "TOP2A", "TPX2", "TRIP13", "TTK", "ZWINT"), size = 3) + scale_fill_gradientn(colors = c("#ffffff","#ffffff","#005b96")) + theme(text = element_text(size = 3)) + NoLegend()
+dev.off()
+```
+
+
+```{r Single cell heatmap of feature expression4}
+# Heatmap for the genes of interest
+# Single cell heatmap of feature expression
+#CancerTreatmentResistantCluster
+
+#DoHeatmapFeature.markers <-FindMarkers(RB_rna, ident.1 = "SERPINB2", logfc.threshold = 0.2, test.use = "roc", only.pos = TRUE)
+#Treatment resistant cancer cluster
+#DoHeatmap(subset(RB_rna, downsample = 100), features  = c("ANLN", "ASPM", "AURKA", "AURKB", "BIRC5", "BUB1", "BUB1B", "CCNA2", "CCNB1", "CCNB2", "CDK1", "CDC20", "CDC45", "CDC6", "CDC7", "CDCA2", "CDCA3", "CDCA8", "CENPA", "CENPE", "CENPL", "CEP55", "CHEK1", "CKS2", "ECT2", "ESPL1", "FBXO5", "FOXM1", "H2AFX", "HP1BP3", "KIF11", "KIF14", "KIF15", "KIF18A", "KIF20A", "KIF23", "KIF2C", "KIF4A", "KIF1C", "MAD2L1", "MCM2", "MCM7", "MELK", "NCAPH", "NDE1", "NEK2", "NUF2", "OIP5", "PAK3", "PBK", "PLK4", "PRC1", "PTTG1", "RAD51AP1", "RNASEH2A", "RRM2", "SGO2", "SMC2", "SPAG5", "SPC25", "TOP2A", "TPX2", "TRIP13", "TTK", "ZWINT"), size = 3) + scale_fill_gradientn(colors = c("#ffffff","#ffffff","#005b96")) + theme(text = element_text(size = 4)) + NoLegend()
+
+##DoHeatmap(subset(RB_rna, downsample = 100), features  = c("ANLN", "ASPM", "AURKA", "AURKB", "BIRC5", "BUB1", "BUB1B", "CCNA2", "CCNB1", "CCNB2", "CDK1", "CDC20", "CDC45", "CDC6", "CDC7", "CDCA2", "CDCA3", "CDCA8", "CENPA", "CENPE", "CENPL", "CEP55", "CHEK1", "CKS2", "ECT2", "ESPL1", "FBXO5", "FOXM1", "H2AFX", "HP1BP3", "KIF11", "KIF14", "KIF15", "KIF18A", "KIF20A", "KIF23", "KIF2C", "KIF4A", "KIF1C", "MAD2L1", "MCM2", "MCM7", "MELK", "NCAPH", "NDE1", "NEK2", "NUF2", "OIP5", "PAK3", "PBK", "PLK4", "PRC1", "PTTG1", "RAD51AP1", "RNASEH2A", "RRM2", "SGO2", "SMC2", "SPAG5", "SPC25", "TOP2A", "TPX2", "TRIP13", "TTK", "ZWINT"), size = 3) + scale_fill_gradientn(colors = c("#ffffff","#ffffff","#005b96")) + theme(text = element_text(size = 3)) + NoLegend()
+#dev.off()
+```
+
+```{r Feature plots genes of interest_ASC}
+# Heatmap for the genes of interest
+# Single cell heatmap of feature expression
+#CancerTreatmentResistantCluster
+
+#reticulate::py_install(packages ='umap-learn')
+
+#cluster1.markers <- FindMarkers(RB_rna, ident.1 = "SERPINB2", logfc.threshold = 0.2, test.use = "roc", only.pos = TRUE)
+
+FeaturePlot(object = RB_rna, label = TRUE, label.size = 6, features = c("FABP4"), cols = c('#e8eaea', '#ff000b'), reduction = "umap")
+dev.copy(pdf,paste0(currentjob,"_FeaturePlot_FABP4_labbel6.pdf"), height=5, width=8)
+dev.off()
+
+
+```
+
+#Save RDS for end of pipe file, first run (no filtering)
+```{r Save end-RDS nr 1 of 2, message=FALSE, warning=FALSE}
+# Save final RDS and countfile (files 1 of 2, unfiltered)
+set.seed(1234)
+Sys.setenv('R_MAX_VSIZE'=1600000)
+saveRDS(RB_rna, file = paste0(currentjob,"_endOfpipe.rds"))
+sct.counts <- RB_rna@assays$SCT@counts
+write.csv(sct.counts, paste0(currentjob,"_endOfpipe_countMatrix.csv"))
+```
+
+```{r Cytotrace analysis, message=FALSE, warning=FALSE}
+set.seed(1234)
+Sys.setenv('R_MAX_VSIZE'=1600000)
+
+#IF STARTING FROM HERE_START WITH LOADING RDS
+RB_rna <- readRDS("LS1_endOfpipe.rds")
+
+#install.packages("devtools")
+#devtools::install_local("~/Downloads/CytoTRACE_0.3.3.tar.gz")
+library(CytoTRACE)
+library(scRNAseq)
+library(SingleCellExperiment)
+library(reticulate)
+Sys.setenv(RETICULATE_PYTHON="/usr/local/bin/python3.7")
+#reticulate::use_python(python = '/Library/Frameworks/Python.framework/Versions/3.7/bin/python3', required = T)
+#py_config()
+#FIRST TIME create conda environment (r-reticulate) for more details (https://rstudio.github.io/reticulate/articles/python_packages.html)
+#conda_create("r-reticulate")
+#Then install (r-reticulate package if required and scanorama in the enviroment )
+#conda_install("r-reticulate", "scanorama")
+#Activate conda environment
+#use_condaenv("r-reticulate")
+#reticulate::import("scanorama")
+
+cytoT_A <- as.matrix(GetAssayData(RB_rna,"counts"))
+cytodf_list <- cytoT_A
+Sys.setenv('R_MAX_VSIZE'=400000)
+results <- CytoTRACE(cytodf_list,enableFast = FALSE)
+
+# If cytoTRACE gives error: 'have_scanoramaCT' not found unload the library with detach("package:CytoTRACE", unload = TRUE) and load it again with library(CytoTRACE)
+# Visualizing results
+plotCytoTRACE(results)
+# DimPlot(sce_A, reduction = 'umap')
+# sce_A<- RunUMAP(sce_A, dims = 1:30, verbose = FALSE)
+cyto_UMAP <- RB_rna@reductions[["umap"]]@cell.embeddings
+plotCytoTRACE(
+  cyto_obj = results,
+  phenotype = NULL,
+  gene = "CD24",
+  colors = NULL,
+  emb = cyto_UMAP,
+  outputDir = ""
+)
+
+
+plotCytoGenes(results,
+              numOfGenes = 20,
+              outputDir = ""
+)
+```
+
+
+```{r Number of Cells in clusters and phase!, echo=TRUE}
+# Print and save cells in cell-cycle
+# kable is pretty neat!
+table(RB_rna@meta.data$Phase) %>% 
+kable(caption = "Number of Cells in each Subpopulation", "markdown",col.names = c("Stage", "Count"), align = "c") %>% kable_styling() 
+
+table(RB_rna@meta.data$seurat_clusters) %>% 
+  kable(caption = "Number of Cells in each Subpopulation", "markdown",col.names = c("Stage", "Count"), align = "c") %>% kable_styling() 
+
+table(RB_rna@meta.data$seurat_clusters) %>% 
+  kable(caption = "Number of Cells in each Subpopulation", "html",col.names = c("Stage", "Count"), align = "c") %>% kable_styling() %>% save_kable(file = paste0(currentjob,"_H.FILT.seurat_clusters.html"), self_contained = T)
+
+table(RB_rna@meta.data$Phase) %>% 
+  kable(caption = "Number of Cells in each Subpopulation", "html",col.names = c("Stage", "Count"), align = "c") %>% kable_styling() %>% save_kable(file = paste0(currentjob,"_H.FILT.Cells-in->Subpopulation.html"), self_contained = T)
+
+```
+
+```{r Save end-RDS nr 1 of 2, message=FALSE, warning=FALSE}
+
+# Save final RDS and countfile (files 1 of 2, unfiltered)
+saveRDS(RB_rna, file = paste0(currentjob,"_endOfpipe-Filt_v1.rds"))
+sct.counts <- RB_rna@assays$SCT@counts
+write.csv(sct.counts, paste0(currentjob,"_endOfpipeFirstIteration_countMatrix-Filt.csv"))
+```
+
+
+```{r about}
+#8 About Seurat
+#Seurat is a Bioconductor package containing a Shiny application for analyzing single cell RNA seq  expression data in different conditions and experimental factors.
+
+#Ankush Sharma  and Marie Rogne
+
+```
+
+```{r citation }
+#9 Citation info
+#If you use this  script for your analysis, please Acknowledge us and cite the Seurat Version3 package
+```
+
+```{r HTML file }
+#When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+#The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
